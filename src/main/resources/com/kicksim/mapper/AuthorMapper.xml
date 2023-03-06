@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kicksim.mapper.AuthorMapper">
+
+	<!-- 작가 등록 -->
+	<insert id="authorEnroll">
+
+		insert into kicksim_author(authorName, nationId,
+		authorIntro)
+		values(#{authorName}, #{nationId}, #{authorIntro} )
+
+	</insert>
+	<!-- 작가 목록 -->
+	<select id="authorGetList"
+		resultType="com.kicksim.model.AuthorVO">
+
+		select authorId, authorName, nationId, regDate, updateDate
+		from
+		kicksim_author
+		<if test="keyword != null">
+			where authorName like CONCAT('%',#{keyword}, '%')
+		</if>
+		order by authorId DESC
+		limit #{skip}, #{amount}
+
+	</select>
+
+	<!-- 작가 수 -->
+	<select id="authorGetTotal" resultType="int">
+
+		select count(*) from kicksim_author
+
+		<if test="keyword != null">
+
+			where authorname like concat('%', #{keyword}, '%');
+
+		</if>
+
+	</select>
+	<!-- 작가 디테일 페이지 -->
+	<select id="authorGetDetail" resultType="com.kicksim.model.AuthorVO">
+
+		select * from kicksim_author where authorid = #{authorId}
+
+	</select>
+	<!-- MySQL -->
+	<!-- 작가 내용 수정 -->
+	<update id="authorModify">
+	
+		update kicksim_author set authorName=#{authorName}, nationId=#{nationId}, authorIntro=#{authorIntro}, updatedate=now() where authorId = #{authorId}
+	
+	</update>
+	<!-- 작가 정보 삭제 -->
+  	<delete id="authorDelete">
+  	
+  		delete from kicksim_author where authorId = #{authorId}
+  	
+  	</delete>
+</mapper>

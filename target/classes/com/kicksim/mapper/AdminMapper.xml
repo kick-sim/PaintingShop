@@ -1,0 +1,104 @@
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kicksim.mapper.AdminMapper">
+	<!-- 작품 등록 -->
+	<insert id="workEnroll">
+		<selectKey resultType="int" keyProperty="workId" order="AFTER">
+  		
+  			<!-- SELECT MAX(workId) FROM kicksim_work -->
+  			SELECT LAST_INSERT_ID() 
+  		
+  		</selectKey>
+		insert into kicksim_work(workName, authorId, exhibitYear, exhibiter,
+		cateCode,
+		workPrice, workStock, workDiscount, workIntro, workContents)
+		values(#{workName},#{authorId},
+		#{exhibitYear},#{exhibiter},#{cateCode},#{workPrice},#{workStock},#{workDiscount},#{workIntro},#{workContents})
+
+	</insert>
+	<!-- 카테고리 리스트 -->
+	<select id="cateList" resultType="com.kicksim.model.CateVO">
+
+		select * from kicksim_bcate order by catecode
+
+	</select>
+	<!-- 상품 리스트 -->
+	<select id="goodsGetList" resultType="com.kicksim.model.WorkVO">
+
+		select workId, workName, b.authorName, c.cateName, workStock,
+		a.regDate
+		from kicksim_work a
+		left outer join kicksim_author b on a.authorId = b.authorId
+		left outer join
+		kicksim_bcate c on a.cateCode = c.cateCode
+		<if test="keyword != null">
+			where (workName like concat ('%', #{keyword}, '%'))
+		</if>
+		order by workId desc
+		limit #{skip}, #{amount}
+
+	</select>
+
+	<!-- 상품 총 갯수 -->
+	<select id="goodsGetTotal" resultType="int">
+
+		select count(*) from kicksim_work
+
+		<if test="keyword != null">
+
+			where workName like concat('%' , #{keyword}, '%')
+
+		</if>
+
+	</select>
+	<!-- 상품 조회 페이지 -->
+	<select id="goodsGetDetail"
+		resultType="com.kicksim.model.WorkVO">
+
+		select workId, workName, (select authorName from kicksim_author where
+		authorId =kicksim_work.authorId) authorName,
+		authorId, exhibitYear, exhibiter, cateCode, workPrice, workStock, workDiscount,
+		workIntro, workContents, regDate, updateDate
+		from kicksim_work where workId = #{workId}
+
+	</select>
+
+	<!-- 상품 정보 수정 -->
+	<update id="goodsModify">
+
+		update kicksim_work set workName = #{workName}, authorId = #{authorId},
+		exhibitYear = #{exhibitYear}, exhibiter = #{exhibiter}, cateCode =
+		${cateCode},
+		workPrice = #{workPrice}, workStock = #{workStock}, workDiscount =
+		#{workDiscount}, workIntro = #{workIntro}, workContents =
+		#{workContents}, updateDate = now()
+		where workId = ${workId}
+
+	</update>
+	<!-- 상품 정보 삭제 -->
+	<delete id="goodsDelete">
+
+		delete from kicksim_work where workId = #{workId}
+
+	</delete>
+	<!-- 이미지 등록 -->
+	<insert id="imageEnroll">
+
+		insert into kicksim_image(workId, fileName, uploadPath, uuid) values
+		(#{workId}, #{fileName}, #{uploadPath}, #{uuid})
+
+	</insert>
+	<!-- 지정 상품 이미지 전체 삭제 --> 
+	<delete id="deleteImageAll">
+	
+		delete FROM kicksim_image where workId = #{workId}
+	
+	</delete>
+	<!-- 지정 상품 이미지 정보 얻기 -->
+	<select id="getAttachInfo" resultType="com.kicksim.model.AttachImageVO">
+	
+		select * from kicksim_image where workId = #{workId}
+	
+	</select>	
+</mapper>
